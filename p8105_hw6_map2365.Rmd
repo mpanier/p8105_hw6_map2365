@@ -116,6 +116,12 @@ formula2 <- bwt ~ blength + gaweeks
 formula3 <- bwt ~ bhead * blength * babysex
 ```
 
+formula1 = incorporates a subset of the available variables that are most likely to influence birth weight. For this first model, I chose to focus on key maternal factors (BMI before pregnancy and maternal age) as well as key factors for the fetus (including their gestational age and sex). I chose to only include these factors because I did not want an overly complicated model and I focused on variables that are know to affect birthweigth (based on prior literature). 
+
+forumla2 = simpler model using length at birth and gestational age as predictors (main effects only)
+
+formula3 = using head circumference, length, sex, and all interactions (including the three-way interaction) between these
+
 ```{r}
 #M1
 
@@ -168,6 +174,11 @@ ggplot(model3_pred, aes(x = pred, y = resid)) +
   ) +
   theme_minimal()
 ```
+For each of the models, residuals were plotted against fitted values using modelr::add_predictions() and modelr::add_residuals(). I used this to evaluate the fit of the 3 models. Based on the plots, I see that all three models show approximately random scatter of points around the zero line and no obvious patterns/trends in the residuals. Furthermore, based on the plots for the 3 models, model 3 appears to have the best model fit. Model 3 appears to be the best model because it has smaller residuals and a more consistent variance pattern. Overall, from the plots, I would day that model 3 > model 2 > model 1 in terms of overall model fit. 
+
+
+
+
 
 ```{r}
 # Monte Carlo cross validation
