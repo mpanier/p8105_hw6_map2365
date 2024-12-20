@@ -31,7 +31,7 @@ homicide_data <- read.csv("data/homicide-data.csv") %>%
     ) %>%
     mutate(victim_age = as.numeric(victim_age))
 ```
-
+The dataset has `r nrow(homicide_data)` observations and `r ncol(homicide_data)` variables. The variables include `r colnames(homicide_data)`.
 
 ```{r}
 #logistic regression for baltimore
@@ -48,7 +48,7 @@ baltimore_results <- broom::tidy(baltimore_model, conf.int = TRUE, exponentiate 
   filter(term == "victim_sexMale") %>%
   select(estimate, conf.low, conf.high)
 
-#logistic regression for all cities 
+#logistic regression - all cities 
 city_results <- homicide_data %>%
   group_by(city_state) %>%
   nest() %>%
@@ -66,6 +66,7 @@ city_results <- homicide_data %>%
   mutate(city_state = fct_reorder(city_state, estimate))
 
 ```
+The adjusted odds ratio for the city of Baltimore is `r baltimore_results$estimate` with a confidence interval of (`r baltimore_results$conf.low`, `r baltimore_results$conf.high`). The odds of having a solved homicide case for those who were male is 0.42 times the odds for a female having a solved homicde case. We are 95% confident that the true estimate is somewhere between (`r baltimore_results$conf.low`, baltimore_results$conf.high`).
 
 ```{r}
 #data visualization 
@@ -83,4 +84,10 @@ ggplot(city_results, aes(x = estimate, y = city_state)) +
   theme(axis.text.y = element_text(size = 8))
 
 ```
+As seen in the visual above, in a vast majority of cities, there are higher odds that a homicide involving women will be solved. The exceptions to this are Stockton, CA, Fresno, CA, and Albuquerque, NM.
+
+
+
+
+
 
