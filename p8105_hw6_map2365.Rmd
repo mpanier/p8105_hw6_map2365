@@ -90,6 +90,9 @@ As seen in the visual above, in a vast majority of cities, there are higher odds
 # Problem 3 
 
 ```{r}
+#library call
+library(modelr)
+
 #data import and cleaning
 birthweight <- read.csv("data/birthweight.csv", 
                         header = TRUE, 
@@ -177,9 +180,6 @@ ggplot(model3_pred, aes(x = pred, y = resid)) +
 For each of the models, residuals were plotted against fitted values using modelr::add_predictions() and modelr::add_residuals(). I used this to evaluate the fit of the 3 models. Based on the plots, I see that all three models show approximately random scatter of points around the zero line and no obvious patterns/trends in the residuals. Furthermore, based on the plots for the 3 models, model 3 appears to have the best model fit. Model 3 appears to be the best model because it has smaller residuals and a more consistent variance pattern. Overall, from the plots, I would day that model 3 > model 2 > model 1 in terms of overall model fit. 
 
 
-
-
-
 ```{r}
 # Monte Carlo cross validation
 cv_df <- crossv_mc(birthweight, n = 100, test = 0.2) %>% 
@@ -218,7 +218,7 @@ cv_df %>%
   theme_minimal()
 
 ```
-
+Based on the cross-validation RMSE for each of the models, if appears that model 3 has the lowest RMSE which indicates that it is the most effective at predicting birthweight, likely because the added interaction terms accounts for interactions between key variable predictors without overfitting the model (like in model 1). This trend in model fit that we observe in the RMSE is consistent with what I observed when looking at the residual plots above. 
 
 
 
