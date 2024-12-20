@@ -1,0 +1,86 @@
+---
+title: "p8105_hw6_map2365"
+author: "Megan Panier"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# Problem 2 
+```{r data, include=FALSE}
+#creating data directory
+dir.create("data", showWarnings = FALSE)
+
+url <- "https://raw.githubusercontent.com/washingtonpost/data-homicides/master/homicide-data.csv"
+download.file(url, destfile = "data/homicide-data.csv", mode = "wb")
+
+# Loading libraries
+library(tidyverse)
+library(janitor)
+
+# cleaning data
+homicide_data <- read.csv("data/homicide-data.csv") %>%
+    janitor::clean_names() %>%
+    mutate(
+        city_state = paste(city, state, sep = ", "),
+        status = ifelse(disposition %in% c("Closed without arrest", "Open/No arrest"), 0, 1)
+    ) %>%
+    filter(
+        !city_state %in% c("Dallas, TX", "Phoenix, AZ", "Kansas City, MO", "Tulsa, AL"),
+        victim_race %in% c("White", "Black"),
+        !is.na(victim_age)
+    ) %>%
+    mutate(victim_age = as.numeric(victim_age))
+```
+
+
+```{r}
+#logistic regression for baltimore
+baltimore_data <- homicide_data %>%
+  filter(city_state == "Baltimore, MD")
+
+baltimore_model <- glm(
+  status ~ victim_age + victim_sex + victim_race,
+  data = baltimore_data,
+  family = binomial(link = "logit")
+)
+
+baltimore_results <- broom::tidy(baltimore_model, conf.int = TRUE, exponentiate = TRUE) %>%
+  filter(term == "victim_sexMale") %>%
+  select(estimate, conf.low, conf.high)
+
+#logistic regression for all cities 
+city_results <- homicide_data %>%
+  group_by(city_state) %>%
+  nest() %>%
+  mutate(
+    model = map(data, ~ glm(
+      status ~ victim_age + victim_sex + victim_race,
+      data = .x,
+      family = binomial(link = "logit")
+    )),
+    tidy_model = map(model, ~ broom::tidy(.x, conf.int = TRUE, exponentiate = TRUE))
+  ) %>%
+  unnest(cols = tidy_model) %>%
+  filter(term == "victim_sexMale") %>%
+  arrange(estimate) %>%
+  mutate(city_state = fct_reorder(city_state, estimate))
+
+```
+
+```{r}
+#data visualization 
+
+ggplot(city_results, aes(x = estimate, y = city_state)) +
+  geom_point(color = "blue", size = 3) +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.2, color = "gray") +
+  labs(
+    title = "Adjusted Odds Ratios (OR) for Solving Homicides by City",
+    x = "Odds Ratio (Male vs Female Victims)",
+    y = "City"
+  ) +
+  geom_vline(xintercept = 1, linetype = "dashed", color = "red") +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.y = element_text(size = 8))
+
+```
+
